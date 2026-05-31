@@ -1,11 +1,16 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="480" height="260" viewBox="0 0 480 260" fill="none">
+<svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="480" height="260" viewBox="0 0 480 260" fill="none">
     <defs>
-        <pattern id="dotPattern" width="12" height="12" patternUnits="userSpaceOnUse">
-            <circle cx="1" cy="1" r="1" fill="var(--pattern)" />
-        </pattern>
         <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
             <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="var(--shadow)" flood-opacity="0.35" />
         </filter>
+        <filter id="neonGlow" x="-40%" y="-40%" width="180%" height="180%">
+            <feDropShadow dx="0" dy="0" stdDeviation="6" flood-color="var(--neon-1)" flood-opacity="0.6" />
+            <feDropShadow dx="0" dy="0" stdDeviation="12" flood-color="var(--neon-2)" flood-opacity="0.35" />
+        </filter>
+        <linearGradient id="neonGradient" x1="0" y1="0" x2="480" y2="0" gradientUnits="userSpaceOnUse">
+            <stop offset="0%" stop-color="var(--neon-1)" />
+            <stop offset="100%" stop-color="var(--neon-2)" />
+        </linearGradient>
     </defs>
 
     <style>
@@ -17,7 +22,8 @@
             --text: #24292f;
             --muted: #57606a;
             --accent: #0969da;
-            --pattern: rgba(27, 31, 36, 0.05);
+            --neon-1: #0284c7;
+            --neon-2: #38bdf8;
             --shadow: rgba(27, 31, 36, 0.12);
         }
         {% elif theme == "dark" %}
@@ -28,7 +34,8 @@
             --text: #c9d1d9;
             --muted: #8b949e;
             --accent: #2f81f7;
-            --pattern: rgba(255, 255, 255, 0.06);
+            --neon-1: #38bdf8;
+            --neon-2: #60a5fa;
             --shadow: rgba(0, 0, 0, 0.4);
         }
         {% else %}
@@ -39,7 +46,8 @@
             --text: #c9d1d9;
             --muted: #8b949e;
             --accent: #2f81f7;
-            --pattern: rgba(255, 255, 255, 0.06);
+            --neon-1: #38bdf8;
+            --neon-2: #60a5fa;
             --shadow: rgba(0, 0, 0, 0.4);
         }
 
@@ -51,16 +59,27 @@
                 --text: #24292f;
                 --muted: #57606a;
                 --accent: #0969da;
-                --pattern: rgba(27, 31, 36, 0.05);
+                --neon-1: #0284c7;
+                --neon-2: #38bdf8;
                 --shadow: rgba(27, 31, 36, 0.12);
             }
         }
         {% endif %}
 
         .bg { fill: var(--bg); }
-        .bg-pattern { fill: url(#dotPattern); }
         .surface { fill: var(--card); filter: url(#shadow); }
-        .border { fill: none; stroke: var(--border); stroke-width: 1; }
+        .border {
+            fill: none;
+            stroke: var(--border);
+            stroke-width: 1;
+        }
+        .border-neon {
+            fill: none;
+            stroke: url(#neonGradient);
+            stroke-width: 2;
+            stroke-linecap: round;
+            filter: url(#neonGlow);
+        }
         .divider { stroke: var(--border); stroke-width: 1; opacity: 0.6; }
 
         .title {
@@ -88,15 +107,24 @@
             font-size: 11px;
             fill: var(--muted);
         }
-        .repo-link {
-            cursor: pointer;
-            text-decoration: none;
+        .repo-desc {
+            font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+            font-weight: 500;
+            font-size: 10px;
+            fill: var(--muted);
         }
         .repo-date {
             font-family: "JetBrains Mono", "SFMono-Regular", "Menlo", monospace;
             font-weight: 600;
             font-size: 11px;
             fill: var(--muted);
+        }
+        .repo-link {
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .repo-link text {
+            pointer-events: all;
         }
         .empty {
             font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
@@ -114,14 +142,26 @@
             from { opacity: 0; }
             to { opacity: 1; }
         }
+
+        @media (prefers-reduced-motion: reduce) {
+            .bg-pattern,
+            .border,
+            .enter {
+                animation: none;
+            }
+        }
     </style>
 
     <rect width="480" height="260" class="bg" />
-    <rect width="480" height="260" class="bg-pattern" />
-
     <g>
         <rect x="14" y="14" width="452" height="232" rx="14" class="surface" />
         <rect x="14" y="14" width="452" height="232" rx="14" class="border" />
+        <rect x="14" y="14" width="452" height="232" rx="14" class="border-neon" stroke-dasharray="160 1208">
+            <animate attributeName="stroke-dashoffset" from="0" to="-1368" dur="7s" repeatCount="indefinite" />
+            <animate attributeName="stroke-dasharray" values="140 1228;220 1148;140 1228" dur="5s" repeatCount="indefinite" />
+            <animate attributeName="stroke-opacity" values="0.3;1;0.3" dur="6s" repeatCount="indefinite" />
+            <animate attributeName="stroke-width" values="1;1.6;1" dur="6s" repeatCount="indefinite" />
+        </rect>
     </g>
 
     <g transform="translate(34, 40)" class="enter" style="animation-delay: 80ms;">
@@ -134,19 +174,22 @@
     <g transform="translate(34, 88)">
         {% if recent_repos %}
             {% for repo in recent_repos %}
-                <g transform="translate(0, {{ loop.index0 * 32 }})" class="enter" style="animation-delay: {{ 140 + loop.index0 * 80 }}ms;">
+                <g transform="translate(0, {{ loop.index0 * 36 }})" class="enter" style="animation-delay: {{ 140 + loop.index0 * 80 }}ms;">
                     {% if repo.url %}
-                        <a class="repo-link" href="{{ repo.url }}" target="_blank" rel="noopener noreferrer">
+                        <a class="repo-link" href="{{ repo.url }}" xlink:href="{{ repo.url }}" target="_blank" rel="noopener noreferrer">
                             <text x="0" y="0" class="repo-name">{{ repo.display_name }}</text>
                         </a>
                     {% else %}
                         <text x="0" y="0" class="repo-name">{{ repo.display_name }}</text>
                     {% endif %}
-                    <text x="410" y="0" class="repo-date" text-anchor="end">{{ repo.updated_at }}</text>
-                    <g transform="translate(0, 14)">
-                        <circle cx="4" cy="-4" r="4" fill="{{ repo.language_color }}" />
-                        <text x="14" y="0" class="repo-meta">{{ repo.language_name }}</text>
+                    <g transform="translate(280, 0)">
+                        <circle cx="0" cy="-4" r="4" fill="{{ repo.language_color }}" />
+                        <text x="8" y="0" class="repo-meta">{{ repo.language_name }}</text>
                     </g>
+                    <text x="410" y="0" class="repo-date" text-anchor="end">{{ repo.updated_at }}</text>
+                    {% if repo.description %}
+                        <text x="0" y="16" class="repo-desc">{{ repo.description }}</text>
+                    {% endif %}
                 </g>
             {% endfor %}
         {% else %}

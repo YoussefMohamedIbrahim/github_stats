@@ -1,11 +1,11 @@
 import requests
 from typing import Dict, Any, List, Optional, Set
-from config import (
-    GITHUB_TOKEN,
+from .config import (
     GRAPHQL_URL,
     EXCLUDED_LANGUAGES,
     MAX_LANGUAGES,
     MAX_RECENT_REPOS,
+    get_github_token,
 )
 
 
@@ -67,25 +67,13 @@ def _build_top_languages(
     return top_languages
 
 
-def _merge_unique_repos(*repo_lists: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
-    merged: List[Dict[str, Any]] = []
-    seen = set()
-    for repos in repo_lists:
-        for repo in repos:
-            name_with_owner = repo.get("nameWithOwner")
-            if not name_with_owner or name_with_owner in seen:
-                continue
-            merged.append(repo)
-            seen.add(name_with_owner)
-    return merged
-
-
 def _build_recent_repos(
     contributed_repos: List[Dict[str, Any]],
     owned_repos: List[Dict[str, Any]],
     limit: int = 5,
     excluded_languages: Optional[Set[str]] = None,
     name_max_len: int = 26,
+    description_max_len: int = 44,
 ) -> List[Dict[str, Any]]:
     excluded = {item.lower() for item in excluded_languages} if excluded_languages else set()
     source = contributed_repos or owned_repos
@@ -110,12 +98,15 @@ def _build_recent_repos(
         if language_name.lower() in excluded:
             language_name = "Other"
             language_color = "#8b949e"
+        description = repo.get("description") or ""
+        description_display = _truncate(description, description_max_len) if description else ""
         updated_at = repo.get("pushedAt") or repo.get("updatedAt") or ""
         recent.append(
             {
                 "name": name_with_owner,
                 "display_name": _truncate(name_with_owner, name_max_len),
                 "url": repo.get("url"),
+                "description": description_display,
                 "language_name": language_name,
                 "language_color": language_color,
                 "updated_at": updated_at[:10] if updated_at else "",
@@ -128,7 +119,25 @@ def _build_recent_repos(
     return recent
 
 
-def fetch_github_stats(username: str) -> Dict[str, Any]:
+def _merge_unique_repos(*repo_lists: List[Dict[str, Any]]) -> List[Dict[str, Any]]:
+    merged: List[Dict[str, Any]] = []
+    seen = set()
+    for repos in repo_lists:
+        for repo in repos:
+            name_with_owner = repo.get("nameWithOwner")
+            if not name_with_owner or name_with_owner in seen:
+                continue
+            merged.append(repo)
+            seen.add(name_with_owner)
+    return merged
+
+
+def fetch_github_stats(
+    username: str,
+    excluded_languages: Optional[Set[str]] = None,
+    max_languages: Optional[int] = None,
+    max_recent_repos: Optional[int] = None,
+) -> Dict[str, Any]:
     """Fetches user statistics using the GitHub GraphQL API."""
 
     query = """
@@ -142,7 +151,7 @@ def fetch_github_stats(username: str) -> Dict[str, Any]:
           totalPullRequestContributions
           restrictedContributionsCount
         }
-                repositoriesContributedTo(first: 100, contributionTypes: [COMMIT, ISSUE, PULL_REQUEST, REPOSITORY]) {
+        repositoriesContributedTo(first: 100, contributionTypes: [COMMIT, ISSUE, PULL_REQUEST, REPOSITORY]) {
           totalCount
           nodes {
             nameWithOwner
@@ -155,15 +164,15 @@ def fetch_github_stats(username: str) -> Dict[str, Any]:
               name
               color
             }
-                        languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
-                            edges {
-                                size
-                                node {
-                                    name
-                                    color
-                                }
-                            }
-                        }
+            languages(first: 10, orderBy: {field: SIZE, direction: DESC}) {
+              edges {
+                size
+                node {
+                  name
+                  color
+                }
+              }
+            }
           }
         }
         repositories(first: 100, ownerAffiliations: OWNER, orderBy: {field: UPDATED_AT, direction: DESC}) {
@@ -194,45 +203,51 @@ def fetch_github_stats(username: str) -> Dict[str, Any]:
       }
     }
     """
-    
+
     headers = {
-        "Authorization": f"Bearer {GITHUB_TOKEN}",
-        "Content-Type": "application/json"
+        "Authorization": f"Bearer {get_github_token()}",
+        "Content-Type": "application/json",
     }
-    
+
     response = requests.post(
-        GRAPHQL_URL, 
-        json={"query": query, "variables": {"username": username}}, 
-        headers=headers
+        GRAPHQL_URL,
+        json={"query": query, "variables": {"username": username}},
+        headers=headers,
     )
-    
+
     if response.status_code != 200:
         raise Exception(f"API request failed with status {response.status_code}: {response.text}")
-        
+
     data = response.json()
     if "errors" in data:
         raise Exception(f"GraphQL Error: {data['errors']}")
-        
+
     user_data = data["data"]["user"]
-    
+
     owned_repositories = user_data["repositories"]["nodes"]
     total_stars = sum(repo.get("stargazerCount", 0) for repo in owned_repositories)
     owned_repo_count = user_data["repositories"]["totalCount"]
 
     contributions = user_data["contributionsCollection"]
     total_commits = contributions["totalCommitContributions"] + contributions["restrictedContributionsCount"]
+
+    excluded = excluded_languages if excluded_languages is not None else EXCLUDED_LANGUAGES
+    languages_limit = max_languages if max_languages is not None else MAX_LANGUAGES
+    recent_limit = max_recent_repos if max_recent_repos is not None else MAX_RECENT_REPOS
+
     contributed_repos = user_data["repositoriesContributedTo"].get("nodes", [])
     language_sources = _merge_unique_repos(owned_repositories, contributed_repos)
     top_languages = _build_top_languages(
         language_sources,
-        EXCLUDED_LANGUAGES,
-        limit=MAX_LANGUAGES,
+        excluded,
+        limit=languages_limit,
     )
+
     recent_repos = _build_recent_repos(
         contributed_repos,
         owned_repositories,
-        excluded_languages=EXCLUDED_LANGUAGES,
-        limit=MAX_RECENT_REPOS,
+        excluded_languages=excluded,
+        limit=recent_limit,
     )
 
     name_display = _truncate(user_data["name"] or user_data["login"], 24)

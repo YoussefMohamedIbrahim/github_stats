@@ -1,6 +1,14 @@
 import os
-from jinja2 import Environment, FileSystemLoader
 from typing import Dict, Any, List, Optional
+from jinja2 import Environment, PackageLoader
+
+
+def _create_env() -> Environment:
+    return Environment(
+        loader=PackageLoader("github_stats", "templates"),
+        autoescape=False,
+    )
+
 
 def render_svgs(
     stats: Dict[str, Any],
@@ -9,7 +17,7 @@ def render_svgs(
 ) -> List[str]:
     """Renders all SVG templates with the provided statistics."""
 
-    env = Environment(loader=FileSystemLoader("templates"))
+    env = _create_env()
     template_specs = [
         ("card.svg", "github-stats"),
         ("languages.svg", "github-languages"),
@@ -17,6 +25,7 @@ def render_svgs(
     ]
 
     theme_list = themes or ["dark", "light"]
+    os.makedirs(output_dir, exist_ok=True)
 
     outputs: List[str] = []
     for theme in theme_list:
@@ -32,17 +41,3 @@ def render_svgs(
     return outputs
 
 
-def render_svg(
-    stats: Dict[str, Any],
-    output_filename: str = "github-stats-dark.svg",
-    theme: str = "dark",
-) -> None:
-    """Renders the primary SVG template with the provided statistics."""
-
-    env = Environment(loader=FileSystemLoader("templates"))
-    template = env.get_template("card.svg")
-    svg_content = template.render(**stats, theme=theme)
-    with open(output_filename, "w", encoding="utf-8") as f:
-        f.write(svg_content)
-
-    print(f"Success: Generated {output_filename}")
