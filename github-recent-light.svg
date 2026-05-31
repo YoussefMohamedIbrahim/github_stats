@@ -1,0 +1,169 @@
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="260" viewBox="0 0 480 260" fill="none">
+    <defs>
+        <pattern id="dotPattern" width="12" height="12" patternUnits="userSpaceOnUse">
+            <circle cx="1" cy="1" r="1" fill="var(--pattern)" />
+        </pattern>
+        <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
+            <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="var(--shadow)" flood-opacity="0.35" />
+        </filter>
+    </defs>
+
+    <style>
+        
+        :root {
+            --bg: #ffffff;
+            --card: #f6f8fa;
+            --border: #d0d7de;
+            --text: #24292f;
+            --muted: #57606a;
+            --accent: #0969da;
+            --pattern: rgba(27, 31, 36, 0.05);
+            --shadow: rgba(27, 31, 36, 0.12);
+        }
+        
+
+        .bg { fill: var(--bg); }
+        .bg-pattern { fill: url(#dotPattern); }
+        .surface { fill: var(--card); filter: url(#shadow); }
+        .border { fill: none; stroke: var(--border); stroke-width: 1; }
+        .divider { stroke: var(--border); stroke-width: 1; opacity: 0.6; }
+
+        .title {
+            font-family: "Space Grotesk", "IBM Plex Sans", "Segoe UI", sans-serif;
+            font-weight: 600;
+            font-size: 18px;
+            fill: var(--text);
+        }
+        .subtitle {
+            font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+            font-weight: 500;
+            font-size: 12px;
+            letter-spacing: 0.2px;
+            fill: var(--muted);
+        }
+        .repo-name {
+            font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+            font-weight: 600;
+            font-size: 12px;
+            fill: var(--text);
+        }
+        .repo-meta {
+            font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+            font-weight: 500;
+            font-size: 11px;
+            fill: var(--muted);
+        }
+        .repo-link {
+            cursor: pointer;
+            text-decoration: none;
+        }
+        .repo-date {
+            font-family: "JetBrains Mono", "SFMono-Regular", "Menlo", monospace;
+            font-weight: 600;
+            font-size: 11px;
+            fill: var(--muted);
+        }
+        .empty {
+            font-family: "IBM Plex Sans", "Segoe UI", sans-serif;
+            font-weight: 500;
+            font-size: 12px;
+            fill: var(--muted);
+        }
+
+        .enter {
+            opacity: 1;
+            animation: fadeIn 0.6s ease-out forwards;
+        }
+
+        @keyframes fadeIn {
+            from { opacity: 0; }
+            to { opacity: 1; }
+        }
+    </style>
+
+    <rect width="480" height="260" class="bg" />
+    <rect width="480" height="260" class="bg-pattern" />
+
+    <g>
+        <rect x="14" y="14" width="452" height="232" rx="14" class="surface" />
+        <rect x="14" y="14" width="452" height="232" rx="14" class="border" />
+    </g>
+
+    <g transform="translate(34, 40)" class="enter" style="animation-delay: 80ms;">
+        <text x="0" y="0" class="title">Recent work</text>
+        <text x="0" y="18" class="subtitle">Latest activity across repositories</text>
+    </g>
+
+    <line x1="34" y1="62" x2="446" y2="62" class="divider" />
+
+    <g transform="translate(34, 88)">
+        
+            
+                <g transform="translate(0, 0)" class="enter" style="animation-delay: 140ms;">
+                    
+                        <a class="repo-link" href="https://github.com/MLEngineProject/MLEngine" target="_blank" rel="noopener noreferrer">
+                            <text x="0" y="0" class="repo-name">MLEngineProject/MLEngine</text>
+                        </a>
+                    
+                    <text x="410" y="0" class="repo-date" text-anchor="end">2026-05-30</text>
+                    <g transform="translate(0, 14)">
+                        <circle cx="4" cy="-4" r="4" fill="#3572A5" />
+                        <text x="14" y="0" class="repo-meta">Python</text>
+                    </g>
+                </g>
+            
+                <g transform="translate(0, 32)" class="enter" style="animation-delay: 220ms;">
+                    
+                        <a class="repo-link" href="https://github.com/MLEngineProject/NNEngine" target="_blank" rel="noopener noreferrer">
+                            <text x="0" y="0" class="repo-name">MLEngineProject/NNEngine</text>
+                        </a>
+                    
+                    <text x="410" y="0" class="repo-date" text-anchor="end">2026-05-29</text>
+                    <g transform="translate(0, 14)">
+                        <circle cx="4" cy="-4" r="4" fill="#f34b7d" />
+                        <text x="14" y="0" class="repo-meta">C++</text>
+                    </g>
+                </g>
+            
+                <g transform="translate(0, 64)" class="enter" style="animation-delay: 300ms;">
+                    
+                        <a class="repo-link" href="https://github.com/MLEngineProject/KNNEngine" target="_blank" rel="noopener noreferrer">
+                            <text x="0" y="0" class="repo-name">MLEngineProject/KNNEngine</text>
+                        </a>
+                    
+                    <text x="410" y="0" class="repo-date" text-anchor="end">2026-05-21</text>
+                    <g transform="translate(0, 14)">
+                        <circle cx="4" cy="-4" r="4" fill="#f34b7d" />
+                        <text x="14" y="0" class="repo-meta">C++</text>
+                    </g>
+                </g>
+            
+                <g transform="translate(0, 96)" class="enter" style="animation-delay: 380ms;">
+                    
+                        <a class="repo-link" href="https://github.com/RestaurantManager-dev/RestaurantManagement" target="_blank" rel="noopener noreferrer">
+                            <text x="0" y="0" class="repo-name">RestaurantManager-dev/R...</text>
+                        </a>
+                    
+                    <text x="410" y="0" class="repo-date" text-anchor="end">2025-12-30</text>
+                    <g transform="translate(0, 14)">
+                        <circle cx="4" cy="-4" r="4" fill="#8b949e" />
+                        <text x="14" y="0" class="repo-meta">Other</text>
+                    </g>
+                </g>
+            
+                <g transform="translate(0, 128)" class="enter" style="animation-delay: 460ms;">
+                    
+                        <a class="repo-link" href="https://github.com/mazensalem/Quran_Memorizing_System" target="_blank" rel="noopener noreferrer">
+                            <text x="0" y="0" class="repo-name">mazensalem/Quran_Memori...</text>
+                        </a>
+                    
+                    <text x="410" y="0" class="repo-date" text-anchor="end">2025-12-29</text>
+                    <g transform="translate(0, 14)">
+                        <circle cx="4" cy="-4" r="4" fill="#8b949e" />
+                        <text x="14" y="0" class="repo-meta">Other</text>
+                    </g>
+                </g>
+            
+        
+    </g>
+</svg>
