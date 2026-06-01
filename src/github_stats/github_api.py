@@ -68,17 +68,15 @@ def _build_top_languages(
 
 
 def _build_recent_repos(
-    contributed_repos: List[Dict[str, Any]],
-    owned_repos: List[Dict[str, Any]],
+    repositories: List[Dict[str, Any]],
     limit: int = 5,
     excluded_languages: Optional[Set[str]] = None,
     name_max_len: int = 26,
     description_max_len: int = 44,
 ) -> List[Dict[str, Any]]:
     excluded = {item.lower() for item in excluded_languages} if excluded_languages else set()
-    source = contributed_repos or owned_repos
     sorted_repos = sorted(
-        source,
+        repositories,
         key=lambda repo: repo.get("pushedAt") or repo.get("updatedAt") or "",
         reverse=True,
     )
@@ -236,16 +234,15 @@ def fetch_github_stats(
     recent_limit = max_recent_repos if max_recent_repos is not None else MAX_RECENT_REPOS
 
     contributed_repos = user_data["repositoriesContributedTo"].get("nodes", [])
-    language_sources = _merge_unique_repos(owned_repositories, contributed_repos)
+    all_repositories = _merge_unique_repos(owned_repositories, contributed_repos)
     top_languages = _build_top_languages(
-        language_sources,
+        all_repositories,
         excluded,
         limit=languages_limit,
     )
 
     recent_repos = _build_recent_repos(
-        contributed_repos,
-        owned_repositories,
+        all_repositories,
         excluded_languages=excluded,
         limit=recent_limit,
     )
