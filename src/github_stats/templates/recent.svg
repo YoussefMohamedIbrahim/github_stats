@@ -2,8 +2,7 @@
 {% set row_height = 32 %}
 {% set list_start = 80 %}
 {% set desc_height = 14 %}
-{% set base_card_height = 212 %}
-{% set card_height = [base_card_height, list_start + (row_count - 1) * row_height + desc_height] | max %}
+{% set card_height = list_start + (row_count - 1) * row_height + desc_height %}
 {% set total_height = card_height + 28 %}
 <svg xmlns="http://www.w3.org/2000/svg" xmlns:xlink="http://www.w3.org/1999/xlink" width="480" height="{{ total_height }}" viewBox="0 0 480 {{ total_height }}" fill="none">
     <defs>

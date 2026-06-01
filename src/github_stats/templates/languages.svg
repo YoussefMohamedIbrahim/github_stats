@@ -1,4 +1,10 @@
-<svg xmlns="http://www.w3.org/2000/svg" width="480" height="240" viewBox="0 0 480 240" fill="none">
+{% set row_count = (top_languages | length) if top_languages else 1 %}
+{% set row_height = 30 %}
+{% set list_start = 86 %}
+{% set desc_height = 14 %}
+{% set card_height = list_start + (row_count - 1) * row_height + desc_height %}
+{% set total_height = card_height + 28 %}
+<svg xmlns="http://www.w3.org/2000/svg" width="480" height="{{ total_height }}" viewBox="0 0 480 {{ total_height }}" fill="none">
     <defs>
         <filter id="shadow" x="-20%" y="-20%" width="140%" height="140%">
             <feDropShadow dx="0" dy="6" stdDeviation="10" flood-color="var(--shadow)" flood-opacity="0.35" />
@@ -137,11 +143,11 @@
         }
     </style>
 
-    <rect width="480" height="240" class="bg" />
+    <rect width="480" height="{{ total_height }}" class="bg" />
     <g>
-        <rect x="14" y="14" width="452" height="212" rx="14" class="surface" />
-        <rect x="14" y="14" width="452" height="212" rx="14" class="border" />
-        <rect x="14" y="14" width="452" height="212" rx="14" class="border-neon" stroke-dasharray="160 1168">
+        <rect x="14" y="14" width="452" height="{{ card_height }}" rx="14" class="surface" />
+        <rect x="14" y="14" width="452" height="{{ card_height }}" rx="14" class="border" />
+        <rect x="14" y="14" width="452" height="{{ card_height }}" rx="14" class="border-neon" stroke-dasharray="160 1168">
             <animate attributeName="stroke-dashoffset" from="0" to="-1328" dur="7s" repeatCount="indefinite" />
             <animate attributeName="stroke-dasharray" values="140 1188;220 1108;140 1188" dur="5s" repeatCount="indefinite" />
             <animate attributeName="stroke-opacity" values="0.3;1;0.3" dur="6s" repeatCount="indefinite" />
