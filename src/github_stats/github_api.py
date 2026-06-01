@@ -69,6 +69,7 @@ def _build_top_languages(
 
 def _build_recent_repos(
     repositories: List[Dict[str, Any]],
+    username: str,
     limit: int = 5,
     excluded_languages: Optional[Set[str]] = None,
     name_max_len: int = 26,
@@ -83,12 +84,17 @@ def _build_recent_repos(
 
     recent: List[Dict[str, Any]] = []
     seen = set()
+    username_lower = username.lower()
     for repo in sorted_repos:
         name_with_owner = repo.get("nameWithOwner")
         if not name_with_owner or name_with_owner in seen:
             continue
         if repo.get("isFork"):
             continue
+
+        display_base = name_with_owner
+        if name_with_owner.lower().startswith(f"{username_lower}/"):
+            display_base = name_with_owner.split("/", 1)[1]
 
         primary = repo.get("primaryLanguage") or {}
         language_name = primary.get("name") or "Other"
@@ -102,7 +108,7 @@ def _build_recent_repos(
         recent.append(
             {
                 "name": name_with_owner,
-                "display_name": _truncate(name_with_owner, name_max_len),
+                "display_name": _truncate(display_base, name_max_len),
                 "url": repo.get("url"),
                 "description": description_display,
                 "language_name": language_name,
@@ -243,6 +249,7 @@ def fetch_github_stats(
 
     recent_repos = _build_recent_repos(
         all_repositories,
+        username=user_data["login"],
         excluded_languages=excluded,
         limit=recent_limit,
     )
