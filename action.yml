@@ -1,0 +1,53 @@
+name: 'GitHub Profile Stats Generator'
+description: 'Generate modern, themed GitHub profile SVG cards for stats, languages, and recent work.'
+branding:
+  icon: 'pie-chart'
+  color: 'blue'
+
+inputs:
+  token:
+    description: 'GitHub Personal Access Token (PAT) with read:user access'
+    required: true
+  username:
+    description: 'GitHub username to fetch stats for'
+    required: true
+  output_dir:
+    description: 'Directory where SVGs will be saved'
+    required: false
+    default: 'images'
+  themes:
+    description: 'Comma-separated list of themes (e.g. dark,light)'
+    required: false
+    default: 'dark,light'
+  exclude_languages:
+    description: 'Comma-separated list of languages to exclude'
+    required: false
+    default: ''
+
+runs:
+  using: "composite"
+  steps:
+    - name: Set up Python
+      uses: actions/setup-python@v5
+      with:
+        python-version: '3.10'
+
+    - name: Install dependencies
+      shell: bash
+      run: pip install "${{ github.action_path }}"
+
+    - name: Generate SVGs
+      shell: bash
+      env:
+        GITHUB_TOKEN: ${{ inputs.token }}
+      run: |
+        mkdir -p "${{ inputs.output_dir }}"
+        
+        # Build the command dynamically
+        CMD_ARGS="${{ inputs.username }} --output-dir ${{ inputs.output_dir }} --themes ${{ inputs.themes }}"
+        
+        if [ -n "${{ inputs.exclude_languages }}" ]; then
+          CMD_ARGS="$CMD_ARGS --exclude-languages ${{ inputs.exclude_languages }}"
+        fi
+        
+        github-stats $CMD_ARGS
