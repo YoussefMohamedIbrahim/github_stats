@@ -217,6 +217,7 @@ def fetch_github_stats(
         GRAPHQL_URL,
         json={"query": query, "variables": {"username": username}},
         headers=headers,
+        timeout=10
     )
 
     if response.status_code != 200:
