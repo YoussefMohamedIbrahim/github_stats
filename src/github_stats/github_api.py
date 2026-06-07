@@ -76,9 +76,10 @@ def _build_recent_repos(
     description_max_len: int = 44,
 ) -> List[Dict[str, Any]]:
     excluded = {item.lower() for item in excluded_languages} if excluded_languages else set()
+    
     sorted_repos = sorted(
         repositories,
-        key=lambda repo: repo.get("pushedAt") or repo.get("updatedAt") or "",
+        key=lambda repo: repo.get("userUpdatedAt") or repo.get("pushedAt") or repo.get("updatedAt") or "",
         reverse=True,
     )
 
@@ -104,7 +105,9 @@ def _build_recent_repos(
             language_color = "#8b949e"
         description = repo.get("description") or ""
         description_display = _truncate(description, description_max_len) if description else ""
-        updated_at = repo.get("pushedAt") or repo.get("updatedAt") or ""
+        
+        updated_at = repo.get("userUpdatedAt") or repo.get("pushedAt") or repo.get("updatedAt") or ""
+        
         recent.append(
             {
                 "name": name_with_owner,
@@ -154,6 +157,25 @@ def fetch_github_stats(
           totalIssueContributions
           totalPullRequestContributions
           restrictedContributionsCount
+          commitContributionsByRepository(maxRepositories: 50) {
+            repository {
+              nameWithOwner
+              url
+              description
+              isFork
+              updatedAt
+              pushedAt
+              primaryLanguage {
+                name
+                color
+              }
+            }
+            contributions(first: 1) {
+              nodes {
+                occurredAt
+              }
+            }
+          }
         }
         repositoriesContributedTo(first: 100, contributionTypes: [COMMIT, ISSUE, PULL_REQUEST, REPOSITORY]) {
           totalCount
@@ -240,8 +262,24 @@ def fetch_github_stats(
     languages_limit = max_languages if max_languages is not None else MAX_LANGUAGES
     recent_limit = max_recent_repos if max_recent_repos is not None else MAX_RECENT_REPOS
 
+    recent_activity_repos = []
+    for repo_contrib in contributions.get("commitContributionsByRepository", []):
+        repo = repo_contrib.get("repository")
+        if not repo:
+            continue
+        
+        contrib_nodes = repo_contrib.get("contributions", {}).get("nodes", [])
+        if contrib_nodes:
+            repo["userUpdatedAt"] = contrib_nodes[0].get("occurredAt")
+            
+        recent_activity_repos.append(repo)
+
     contributed_repos = user_data["repositoriesContributedTo"].get("nodes", [])
+    
     all_repositories = _merge_unique_repos(owned_repositories, contributed_repos)
+    
+    recent_candidates = _merge_unique_repos(recent_activity_repos, owned_repositories)
+
     top_languages = _build_top_languages(
         all_repositories,
         excluded,
@@ -249,7 +287,7 @@ def fetch_github_stats(
     )
 
     recent_repos = _build_recent_repos(
-        all_repositories,
+        recent_candidates,
         username=user_data["login"],
         excluded_languages=excluded,
         limit=recent_limit,
